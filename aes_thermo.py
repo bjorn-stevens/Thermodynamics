@@ -15,14 +15,14 @@ T0      = 273.15   # Standard Temperature [K]
 # Based on Park et al (2004) Meteorlogia, O2 levels are declining as CO2 levels rise, but at a tiny arte.
 #
 x_ar  = 9.332e-3
-x_o2  = 0.20944 
-x_n2  = 0.78083  
+x_o2  = 0.20944
+x_n2  = 0.78083
 x_co2 = 0.415e-3
 #
 # Based on Chase (1998) J Phys Chem Ref Data
 #
 m_ar  = 39.948
-m_o2  = 15.9994 * 2 
+m_o2  = 15.9994 * 2
 m_n2  = 14.0067 * 2
 # Based on Chase (1998) J Phys Chem Ref Data
 #
@@ -34,8 +34,8 @@ T0      = 273.15   # Standard Temperature [K]
 # Based on Park et al (2004) Meteorlogia, O2 levels are declining as CO2 levels rise, but at a tiny arte.
 #
 x_ar  = 9.332e-3
-x_o2  = 0.20944 
-x_n2  = 0.78083  
+x_o2  = 0.20944
+x_n2  = 0.78083
 x_co2 = 0.415e-3
 #
 # Based on Chase (1998) J Phys Chem Ref Data
@@ -52,8 +52,8 @@ T0      = 273.15   # Standard Temperature [K]
 # Based on Park et al (2004) Meteorlogia, O2 levels are declining as CO2 levels rise, but at a tiny arte.
 #
 x_ar  = 9.332e-3
-x_o2  = 0.20944 
-x_n2  = 0.78083  
+x_o2  = 0.20944
+x_n2  = 0.78083
 x_co2 = 0.415e-3
 #
 # Based on Chase (1998) J Phys Chem Ref Data
@@ -71,8 +71,8 @@ cp_co2 = 37.129  # 298.15K or 32.359 @ 200K
 cp_h2o = 33.349 + (33.590 - 33.349)/98.15 * (T0-200) # Interpolated to T0 from Chase values (but not used)
 
 s0_ar  = 154.845  # 298.15K
-s0_o2  = 205.147  # 298.15K 
-s0_n2  = 191.609  # 298.15K 
+s0_o2  = 205.147  # 298.15K
+s0_n2  = 191.609  # 298.15K
 s0_co2 = 213.795  # 298.15K
 s0_h2o = 188.854  # 298.15
 
@@ -87,7 +87,7 @@ cpd = (   1./md)*(x_ar*cp_ar + x_o2*cp_o2 + x_n2*cp_n2 + x_co2*cp_co2) *1000.  #
 sd00= (   1./md)*(x_ar*s0_ar + x_o2*s0_o2 + x_n2*s0_n2 + x_co2*s0_co2) * 1000.  + cpd * np.log(T0/298.15)  # Dry air entropy at P0, T0
 
 cpv     = 1865.01   # IAPWS97 at 273.15 , for this we could use the Chase values, but they are closer to 1861
-cpl     = 4219.32   # '' 
+cpl     = 4219.32   # ''
 cpi     = 2096.70   # ''
 lv0     = 2500.93e3 # ''
 lf0     =  333.42e3 # ''
@@ -103,7 +103,7 @@ TvT     = 273.16   # Triple point temperature [K] of water
 PvT     = 611.655
 
 def thermo_input(x, xtype='none'):
-    
+
     x = np.asarray(x).flatten()
     scalar_input = False
     if x.ndim == 0:
@@ -122,14 +122,14 @@ def es(T,state='liq'):
     """ Returns the saturation vapor pressure of water over liquid or ice, or the minimum of the two,
     depending on the specificaiton of the state variable.  The calculation follows Wagner and Pruss (2002)
     for saturation over planar liquid, and Wagner et al., 2011 for saturation over ice.  The choice
-    of formulation was based on a comparision of many many formulae, among them those by Sonntag, Hardy, 
+    of formulation was based on a comparision of many many formulae, among them those by Sonntag, Hardy,
     Romps, Murphy and Koop, and others (e.g., Bolton) just over liquid. The Wagner and Pruss and Wagner
     formulations were found to be the most accurate as cmpared to the IAPWS standard for warm temperatures,
     and the Wagner et al 2011 form is the IAPWS standard for ice.
     >>> es([273.16,290.])
     [611.65706974 1919.87719485]
     """
- 
+
     def esif(T):
         a1 = -0.212144006e+2
         a2 =  0.273203819e+2
@@ -143,7 +143,7 @@ def es(T,state='liq'):
     def eslf(T):
         vt = 1.-x/TvC
         return PvC * np.exp(TvC/x * (-7.85951783*vt + 1.84408259*vt**1.5 - 11.7866497*vt**3 + 22.6807411*vt**3.5 - 15.9618719*vt**4 + 1.80122502*vt**7.5))
-    
+
     x,  scalar_input = thermo_input(T, 'Kelvin')
 
     if (state == 'liq'):
@@ -162,43 +162,59 @@ def desdT(T,state='liq'):
     or ice""
     >>> desdT([273.16,290.])
     [ 44.43669338 121.88180492]
-    """   
+    """
     x,  scalar_input = thermo_input(T, 'Kelvin')
     dx = 0.01; xp = x+dx/2; xm = x-dx/2
     return (es(xp)-es(xm))/dx
-   
+
 def phase_change_enthalpy(Tx,fusion=False):
-    """ Returns the enthlapy [J/g] of vaporization (default) of water vapor or 
+    """ Returns the enthlapy [J/g] of vaporization (default) of water vapor or
     (if fusion=True) the fusion anthalpy.  Input temperature can be in degC or Kelvin
     >>> phase_change_enthalpy(273.15)
     2500.8e3
-    """  
+    """
 
     TC, scalar_input = thermo_input(Tx, 'Celcius')
     if (fusion):
         el = lf0 + (cpl-cpi)*TC
     else:
         el = lv0 + (cpv-cpl)*TC
- 
+
     if scalar_input:
         return np.squeeze(el)
     return el
-    
-def pp2mr(pv,p):
-    """ Calculates mixing ratio from the partial and total pressure
-    assuming both have same units and returns value in units of kg/kg.
-    checked 20.03.20
+
+def pp2sm(pv,p):
+    """ Calculates specific mass from the partial and total pressure
+    assuming both have same units and no condensate is present.  Returns value
+    in units of kg/kg. checked 15.06.20
     """
 
     pv,  scalar_input1 = thermo_input(pv) # don't specify pascal as this will wrongly corrected
     p ,  scalar_input2 = thermo_input(p ,'Pascal')
     scalar_input = scalar_input1 and scalar_input2
 
-    ret = eps1*pv/(p-pv)
+    x   = eps1*pv/(p-pv)
+    sm  = x/(1+x)
     if scalar_input:
-        return np.squeeze(ret)
-    return ret
-   
+        return np.squeeze(sm)
+    return sm
+
+def pp2mr(pv,p):
+    """ Calculates mixing ratio from the partial and total pressure
+    assuming both have same unitsa nd no condensate is present. Returns value
+    in units of kg/kg. Checked 20.03.20
+    """
+
+    pv,  scalar_input1 = thermo_input(pv) # don't specify pascal as this will wrongly corrected
+    p ,  scalar_input2 = thermo_input(p ,'Pascal')
+    scalar_input = scalar_input1 and scalar_input2
+
+    mr = eps1*pv/(p-pv)
+    if scalar_input:
+        return np.squeeze(mr)
+    return mr
+
 def mr2pp(mr,p):
     """ Calculates partial pressure from mixing ratio and pressure, if mixing ratio
     units are greater than 1 they are normalized by 1000.
@@ -237,10 +253,10 @@ def get_theta_e(T,P,qt,formula='isentrope'):
 
     else: # Follows Stevens and Siebesma, Clouds and Climate Book
         ps = es(TK)
-        qs = (ps/(PPa-ps)) * eps1 * (1. - qt)        
+        qs = (ps/(PPa-ps)) * eps1 * (1. - qt)
         qv = np.minimum(qt,qs)
         ql = qt-qv
-        
+
         Re = (1-qt)*Rd
         R  = Re + qv*Rv
         pv = qv * (Rv/R) *PPa
@@ -249,7 +265,7 @@ def get_theta_e(T,P,qt,formula='isentrope'):
         cpe= cpd + qt*(cpl-cpd)
         omega_e = (R/Re)**(Re/cpe) * RH**(-qv*Rv/cpe)
         theta_e = TK*(P0/PPa)**(Re/cpe)*omega_e*np.exp(qv*lv/(cpe*TK))
-        
+
     if scalar_input:
         return np.squeeze(theta_e)
     return(theta_e)
@@ -265,7 +281,7 @@ def get_theta_l(T,P,qt):
     scalar_input = scalar_input1 and scalar_input2 and scalar_input3
 
     ps = es(TK)
-    qs = (ps/(PPa-ps)) * eps1 * (1. - qt) 
+    qs = (ps/(PPa-ps)) * eps1 * (1. - qt)
     qv = np.minimum(qt,qs)
     ql = qt-qv
 
@@ -324,7 +340,7 @@ def get_theta_s(T,P,qt):
 
 def get_theta_rho(T,P,qt):
 #   """ Calculates theta_rho as theta_l * (1+Rd/Rv qv - qt)
-#   """  
+#   """
 
     TK,  scalar_input1 = thermo_input(T, 'Kelvin')
     PPa, scalar_input2 = thermo_input(P, 'Pascal')
@@ -332,12 +348,12 @@ def get_theta_rho(T,P,qt):
     scalar_input = scalar_input1 and scalar_input2 and scalar_input3
 
     theta_l = get_theta_l(TK,PPa,qt)
-    
+
     ps = es(TK)
     qs = (ps/(PPa-ps)) * (Rd/Rv) * (1. - qt)
     qv = np.minimum(qt,qs)
     theta_rho = theta_l * (1.+ qv/eps1 - qt)
- 
+
     if scalar_input:
         return np.squeeze(theta_rho)
     return(theta_rho)
@@ -348,7 +364,7 @@ def T_from_Te(Te,P,qt):
 	>>> T_from_Te(350.,1000.,17)
 	304.4761977
     """
-    
+
     def zero(T,Te,P,qt):
         return  np.abs(Te/get_theta_e(T,P,qt)-1.)
     return optimize.fsolve(zero,   300., args=(Te,P,qt))
@@ -394,14 +410,14 @@ def P_from_Tl(Tl,T,qt):
     return optimize.fsolve(zero, 90000., args=(Tl,T,qt))
 
 def get_Plcl(T,P,qt,iterate=False, ice=False):
-    """ Returns the pressure [Pa] of the LCL.  The routine gives as a default the 
-    LCL using the Bolton formula.  If iterate is true uses a nested optimization to 
-    estimate at what pressure, Px and temperature, Tx, qt = qs(Tx,Px), subject to 
+    """ Returns the pressure [Pa] of the LCL.  The routine gives as a default the
+    LCL using the Bolton formula.  If iterate is true uses a nested optimization to
+    estimate at what pressure, Px and temperature, Tx, qt = qs(Tx,Px), subject to
     theta_e(Tx,Px,qt) = theta_e(T,P,qt).  This works for saturated air.
 	>>> Plcl(300.,1020.,17)
 	96007.495
     """
-    
+
     def delta_qs(P,Te,qt):
         TK = T_from_Te(Te,P,qt)
         if (ice):
@@ -436,5 +452,18 @@ def get_Plcl(T,P,qt,iterate=False, ice=False):
         pv = mr2pp(qt/(1.-qt),PPa)
         Tl = 55 + 2840./(3.5*np.log(TK) - np.log(pv/100.) - 4.805)
         Plcl = PPa * (Tl/TK)**(cp/R)
-        
+
     return Plcl
+
+def get_Zlcl(Plcl,T,P,qt,Z, iterate=False, ice=False):
+    """ Returns the height of the LCL assuming temperature changes following a
+    dry adiabat with vertical displacements from the height where the ambient
+    temperature is measured.
+	>>> Zlcl(300.,1020.,17)
+	96007.495
+    """
+    cp = cpd + qt*(cpv-cpd)
+    R  = Rd  + qt*(Rv-Rd)
+    Zlcl = T*(1. - (Plcl/P)**(R/cp)) * cp/gravity + Z
+
+    return Zlcl
