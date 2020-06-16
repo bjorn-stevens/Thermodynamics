@@ -188,6 +188,8 @@ def pp2sm(pv,p):
     """ Calculates specific mass from the partial and total pressure
     assuming both have same units and no condensate is present.  Returns value
     in units of kg/kg. checked 15.06.20
+    >>> pp2sm(es(273.16),60000.)
+    0.00636529
     """
 
     pv,  scalar_input1 = thermo_input(pv) # don't specify pascal as this will wrongly corrected
